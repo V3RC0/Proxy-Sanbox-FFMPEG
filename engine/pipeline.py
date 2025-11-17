@@ -4,13 +4,16 @@ from .encode import encode_multi, encode_single
 from .validator import load_and_validate_recipes
 from .utils import ensure_folder
 from .ffmpeg_check import check_ffmpeg
+from .metrics import get_size, calc_psnr, calc_ssim
+from .summary_csv import write_summary_csv
 
 
 # ───────────────────────────────────────────────
 # 1. PROXY AND TEST
 # ───────────────────────────────────────────────
 def proxy_and_test(input_file, start_list, duration, recipes_json,
-                   pick=None, outdir="test_out", log=None):
+                   pick=None, outdir="test_out", log=None, keep_proxy=False):
+
 
     # 1. CHECK FFMPEG FIRST
     ff = check_ffmpeg()
@@ -44,6 +47,7 @@ def proxy_and_test(input_file, start_list, duration, recipes_json,
     proxy_list = proxy_res["data"]
 
     # TEST ENCODE FOR EACH PROXY
+    summary_rows = []
     all_results = []
 
     for p in proxy_list:
@@ -51,24 +55,60 @@ def proxy_and_test(input_file, start_list, duration, recipes_json,
         proxy_file = pdata["output_file"]
         idx = pdata["index"]
 
-        # folder for each proxy
+        # get original proxy size (in bytes)
+        size_original = get_size(proxy_file)
+
+        # create a dedicated output folder for this proxy index
         each_out = outdir / f"proxy_{idx:02d}"
         each_out.mkdir(parents=True, exist_ok=True)
 
+        # run all recipes for this proxy clip
         enc_res = encode_multi(
             proxy_file=proxy_file,
             recipes_dict=recipes_dict,
             pick_raw=pick,
             outdir=each_out,
-            log=log
+            log=log,
         )
         all_results.append(enc_res)
 
-        # Remove proxy file after use
-        try:
-            Path(proxy_file).unlink()
-        except:
-            pass
+        for item in enc_res.get("data", []):
+            d = item.get("data", {})
+
+            recipe_id = d.get("recipe_id", "UNKNOWN")
+            encoded_file = d.get("output_file")
+            size_encoded = get_size(encoded_file) if encoded_file else None
+            encode_time = d.get("elapsed_sec")
+
+            # compute PSNR & SSIM between original proxy and encoded result
+            psnr = calc_psnr(proxy_file, encoded_file)
+            ssim = calc_ssim(proxy_file, encoded_file)
+
+            summary_rows.append([
+                idx,            # proxy_index
+                recipe_id,      # recipe_id
+                size_original,  # original proxy size (bytes)
+                size_encoded,   # encoded file size (bytes)
+                encode_time,    # encode duration (seconds)
+                psnr,
+                ssim,
+            ])
+
+        # remove the temporary proxy file after all tests for this proxy
+        if not keep_proxy:
+            try:
+                Path(proxy_file).unlink()
+            except OSError:
+                pass
+
+
+    
+    # Generate CSV (fail-safe)
+    try:
+        write_summary_csv(summary_rows, outdir)
+    except:
+        pass
+
 
     return {
         "ok": True,

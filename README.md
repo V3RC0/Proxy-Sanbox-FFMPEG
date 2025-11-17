@@ -1,54 +1,56 @@
-# Proxy-Sanbox-FFMPEG
-FFmpeg Proxy Sandbox is a lightweight tool for rapid transcoding tests using FFmpeg.
-It allows creators, editors, and developers to test multiple encoding recipes on short proxy clips before applying them to full videos.
+# FFmpeg Proxy Sandbox
 
-The project is built with a modular Python engine and a Tkinter GUI.
+FFmpeg Proxy Sandbox is a lightweight transcoding experiment tool designed for fast testing of encoding recipes using proxy-based video processing.  
+The system provides quick clip extraction, batch transcoding, automated quality analysis, and a clean Tkinter GUI optimized for research and evaluation.
 
 ---
 
 ## Features
 
-### Proxy-Based Testing
+### 🔹 Proxy-Based Transcoding
+- Generate multiple short proxy clips from a single input video.
+- Supports multiple start points and custom duration.
+- Extracts proxy clips without re-encoding for maximum speed.
 
-* Generate multiple proxy clips from a source video
-* Apply multiple encoding recipes in one batch
-* Compare quality, size, and behavior instantly
+### 🔹 Recipe-Based Encoding
+- Uses `recipes.json` to define codec, CRF, preset, and encoder settings.
+- Supports:
+  - Single encoding
+  - Multi-encoding (batch)
+  - Apply-to-full-video operations
 
-### Recipe System (`recipes.json`)
+### 🔹 Quality Metrics (Automatic)
+For every encoded output, the system automatically computes:
+- **PSNR** (Peak Signal-to-Noise Ratio)
+- **SSIM** (Structural Similarity Index)
+- **Encode duration (seconds)**
+- **File size comparison (original proxy vs encoded)**
 
-* Editable JSON configuration file
-* Supports `libx264`, `libx265`, and `libvpx-vp9`
-* Parameters: CRF, preset, bitrate, VP9 deadline
-* Recipes can be reloaded from the GUI
+All results are exported into a **summary.csv** file.
 
-### Full-Video Apply
+### 🔹 GUI Application (Tkinter)
+The GUI provides:
+- Multi-start time entry
+- Duration control
+- Recipe selection
+- Input/output browser
+- Real-time log viewer
+- Status banner (success/error)
+- "Open folder" shortcuts
+- **Keep proxy files** checkbox (toggle deletion of temporary proxies)
 
-* Apply a selected recipe to one or many input videos
-* Output names generated automatically
-
-### Real-Time FFmpeg Logging
-
-* Live FFmpeg logs inside the GUI
-* Auto scroll and “Clear Log” features included
-
-### Robust Engine
-
-* Proxy generation (single & batch)
-* Encoding pipelines
-* Recipe validation
-* FFmpeg availability checks
+### 🔹 Validation & Safety
+- Recipe validator (checks codec/preset fields)
+- FFmpeg path checker
+- Error propagation from the engine to the GUI
 
 ---
 
 ## Installation
 
-### 1. Install Python
-
-Python 3.9+ recommended.
-
-### 2. Install FFmpeg
-
-Must be available in system PATH.
+### Requirements
+- Python 3.10+
+- FFmpeg installed (and accessible through system PATH)
 Download: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 

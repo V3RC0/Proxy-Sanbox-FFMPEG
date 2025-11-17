@@ -524,8 +524,8 @@ class MainApp(tk.Tk):
         ).pack(anchor="w", pady=2)
 
         ttk.Button(
-            links, text="GitHub Repo",
-            command=lambda: webbrowser.open("https://github.com/")
+            links, text="GitHub Repository",
+            command=lambda: webbrowser.open("https://github.com/V3RC0/Proxy-Sanbox-FFMPEG.git")
         ).pack(anchor="w", pady=2)
 
         env = ttk.LabelFrame(f, text="Environment Check")
